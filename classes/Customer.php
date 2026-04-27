@@ -40,11 +40,17 @@ class Customer {
     }
 
     public function create(string $CFN, string $CLN, string $contact): int|false {
-        $s = $this->db->prepare(
-            'INSERT INTO customers (CFN, CLN, contact_number) VALUES (?, ?, ?)'
-        );
-        $s->execute([$CFN, $CLN, $contact]);
-        return (int)$this->db->lastInsertId() ?: false;
+        try {
+            $s = $this->db->prepare(
+                'INSERT INTO customers (CFN, CLN, contact_number) VALUES (?, ?, ?)'
+            );
+            $s->execute([$CFN, $CLN, $contact]);
+            $id = (int)$this->db->lastInsertId();
+            return $id > 0 ? $id : false;
+        } catch (Throwable $e) {
+            error_log('Customer creation error: ' . $e->getMessage());
+            return false;
+        }
     }
 
     public function countAll(): int {
